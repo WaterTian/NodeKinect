@@ -1,16 +1,17 @@
 {
-  "name": "webclient-express-server",
-  "version": "0.0.2",
+  "name": "nodekinect",
+  "version": "0.0.3",
+  "author": "WaterTian <changewater@qq.com>",
   "description": "show skeletons in browser",
-  "main": "index.js",
+  "license": "MIT",
+  "homepage": "https://watertian.github.io/",
+  "main": "point.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "WaterTian <changewater@qq.com>",
-  "license": "MIT",
   "dependencies": {
-    "express": "~4.9.5",
-    "kinect2": "^0.1.5",
-    "socket.io": "^2.0.4"
+    "express": "^4.17.1",
+    "kinect2": "^0.1.7",
+    "socket.io": "^2.2.0"
   }
 }
