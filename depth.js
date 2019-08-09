@@ -24,21 +24,28 @@ if(kinect.open()) {
 	kinect.on('multiSourceFrame', function(frame){
 		var depthBuffer = frame.rawDepth.buffer;
 		var bodyFrame = frame.body;
-		
+
+
 		var j = 0;
-		var depthArr = new Uint16Array(depthBuffer.length*0.5);
-		for(var i = 0; i < depthBuffer.length; i+=2) {
-			var depth = (depthBuffer[i+1] << 8) + depthBuffer[i]; //get uint16 data from buffer
-			if(depth <= 1000 || depth >= 4000) depth = 0;
+		var depthArr = new Uint8Array(depthBuffer.length*0.5);
+
+		for (var i = 0; i < depthBuffer.length; i += 2) {
+			var depth = (depthBuffer[i + 1] << 8) + depthBuffer[i]; //get  data from uint16 buffer
+			if (depth <= 1000 || depth >= 2000) depth = 0;
+			else depth -=1000;
+
 			depthArr[j] = depth;
 			j++;
 		}
 
-		var buf = new Buffer( depthArr.buffer); 
-		zlib.deflate(buf, function(err, result){
-			if(!err) {
-				io.sockets.emit('depthFrame', result);
-			}else{
+		// console.log(depthArr.length);
+
+		zlib.deflate(depthArr.buffer, function(err, result) {
+			if (!err) {
+				var _b = result.toString('base64');
+				io.sockets.emit('depthFrame', _b);
+				// io.sockets.emit('depthFrame', result);
+			} else {
 				console.log(err);
 			}
 		});
