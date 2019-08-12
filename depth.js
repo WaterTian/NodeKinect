@@ -10,9 +10,8 @@ var kinect = new Kinect2();
 
 
 if(kinect.open()) {
-	server.listen(8000);
-	console.log('Server listening on port 8000');
-	console.log('Point your browser to http://127.0.0.1:8000');
+	server.listen(8888);
+	console.log('Server listening on port 8888');
 
 	app.get('/', function(req, res) {
 		res.sendFile(__dirname + '/html/index.html');
@@ -21,18 +20,37 @@ if(kinect.open()) {
 
 
 
+    var depthMin = 500;
+	var depthMax = 1000;
+	io.sockets.on('connection', function (socket){
+
+	    socket.on('setDepthMin', function(data){
+	        depthMin = data;
+	    });
+	    socket.on('setDepthMax', function(data){
+	        depthMax = data;
+	    });
+
+
+	    socket.on('setDepthStr', function(data){
+	        io.sockets.emit('finalDepthStr', data);
+	    });
+
+	});
+
+
 	kinect.on('multiSourceFrame', function(frame){
 		var depthBuffer = frame.rawDepth.buffer;
 		var bodyFrame = frame.body;
 
 
 		var j = 0;
-		var depthArr = new Uint8Array(depthBuffer.length*0.5);
+		var depthArr = new Uint16Array(depthBuffer.length*0.5);
 
 		for (var i = 0; i < depthBuffer.length; i += 2) {
 			var depth = (depthBuffer[i + 1] << 8) + depthBuffer[i]; //get  data from uint16 buffer
-			if (depth <= 1000 || depth >= 2000) depth = 0;
-			else depth -=1000;
+			if (depth <= depthMin || depth >= depthMax) depth = 0;
+			else depth -=depthMin;
 
 			depthArr[j] = depth;
 			j++;
@@ -59,8 +77,6 @@ if(kinect.open()) {
 	});
 
 }
-
-
 
 
 
