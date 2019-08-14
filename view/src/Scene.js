@@ -15,6 +15,9 @@ var ctx = canvas.getContext('2d');
 var imageData = ctx.createImageData(canvas.width, canvas.height);
 
 
+var canvasTemp = document.createElement('canvas');
+var ctxTemp = canvasTemp.getContext('2d');
+
 var canvasFinal = document.getElementById('final');
 var ctxFinal = canvasFinal.getContext('2d');
 
@@ -24,8 +27,8 @@ window.params = {
 
 	area: {
 		x: 0,
-		y: 0,
-		w: 212,
+		y: 100,
+		w: 512,
 		h: 224,
 	},
 };
@@ -116,45 +119,59 @@ export default class Scene {
 	drawFinal() {
 		let _w = params.area.w;
 		let _h = params.area.h;
-		canvasFinal.width = _w;
-		canvasFinal.height = _h;
-		ctxFinal.clearRect(0, 0, _w, _h);
 		let _imgData = ctx.getImageData(params.area.x, params.area.y, _w, _h);
+
+		canvasTemp.width = _w;
+		canvasTemp.height = _h;
+		ctxTemp.clearRect(0, 0, _w, _h);
+		ctxTemp.putImageData(_imgData, 0, 0);
+
+
+
+		let _size = 0.4;
+
+
+		canvasFinal.width = _w * _size;
+		canvasFinal.height = _h * _size;
+		ctxFinal.clearRect(0, 0, _w, _h);
+
+		ctxFinal.scale(_size, _size);
+		ctxFinal.drawImage(canvasTemp, 0, 0, _w, _h);
+
+		let _finalData = ctxFinal.getImageData(0, 0, _w * _size, _h * _size);
+
+		ctxFinal.clearRect(0, 0, _w, _h);
 
 		let pointStr = "";
 
-		// for (let y = 0; y < params.area.h; y += 1 / size) {
-		// 	for (let x = 0; x < params.area.w; x += 1 / size) {
-
-		// 		let _d = _imgData.data[(y * _w + x) * 4];
-
-		// 	}
-		// }
-
-		let _size = 2;
 		let _num = 0
-		for (var i = 0; i < _imgData.data.length; i += 4*_size) {
+		for (var i = 0; i < _finalData.data.length; i += 4) {
+			let _d = _finalData.data[i];
 
-			let _d = _imgData.data[i];
+			_finalData.data[i] = 0;
+			_finalData.data[i+1] = 0;
+			_finalData.data[i+2] = 0;
 
-			if (_d > 50) {
-				let _x = _num*_size % _w;
-				let _y = Math.floor(_num*_size / _w);
+			if (_d > 10) {
+				let _x = _num % Math.floor(_w * _size);
+				let _y = Math.floor(_num / (_w * _size));
 
-				// console.log(_x+"_"+_y);
+				// console.log(_x + "_" + _y);
 
-				 _imgData.data[i+1] = 0;
+				_finalData.data[i + 1] = 255;
 
 				if (pointStr != "") pointStr += ",";
-				pointStr += Math.round(_x/_w*100)/100 + "~" + Math.round(_y/_h*100)/100;
+				pointStr += Math.round(_x / (_w * _size) * 100) / 100 + "~" + Math.round(_y / (_h* _size)* 100) / 100;
 			}
+
+
 
 			_num++;
 		}
 
+		ctxFinal.putImageData(_finalData, 0, 0);
 
-		ctxFinal.putImageData(_imgData, 0, 0);
-
+		// console.log(pointStr);
 
 		That.socket.emit('setDepthStr', pointStr);
 	}
