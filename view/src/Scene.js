@@ -24,12 +24,14 @@ var ctxFinal = canvasFinal.getContext('2d');
 window.params = {
 	depthMin: 500,
 	depthMax: 1000,
+	size: 1,
+	finalSize: 0.5,
 
 	area: {
 		x: 0,
-		y: 100,
-		w: 512,
-		h: 224,
+		y: 0,
+		w: 1,
+		h: 1,
 	},
 };
 
@@ -62,20 +64,24 @@ export default class Scene {
 		gui.add(params, 'depthMax', 500, 5000).step(1).listen().onChange(function() {
 			That.setDepth();
 		});
+		gui.add(params, 'size', 1, 10).step(1).listen().onChange(function() {
+			That.setDepth();
+		});		
 
+		gui.add(params, 'finalSize', .1, 1);
 
 		var area = gui.addFolder('depthArea');
-		area.add(params.area, 'x', 0, 512);
-		area.add(params.area, 'y', 0, 424);
-		area.add(params.area, 'w', 0, 512);
-		area.add(params.area, 'h', 0, 424);
+		area.add(params.area, 'x', 0, 1).step(0.01);
+		area.add(params.area, 'y', 0, 1).step(0.01);
+		area.add(params.area, 'w', 0, 1).step(0.01);
+		area.add(params.area, 'h', 0, 1).step(0.01);
 
 	}
 
 	setDepth() {
-
 		this.socket.emit('setDepthMin', params.depthMin);
 		this.socket.emit('setDepthMax', params.depthMax);
+		this.socket.emit('setSize', params.size);
 	}
 
 	depthFrame(depthBuffer) {
@@ -100,6 +106,9 @@ export default class Scene {
 			depthNum += 2;
 		}
 
+		canvas.width = 512/params.size;
+		canvas.height = 424/params.size;
+
 		ctx.putImageData(imageData, 0, 0);
 
 		That.drawFinal();
@@ -109,17 +118,24 @@ export default class Scene {
 
 
 	drawLine() {
+		let _x = params.area.x*512/params.size;
+		let _y = params.area.y*424/params.size;
+		let _w = params.area.w*512/params.size;
+		let _h = params.area.h*424/params.size;
+
 		ctx.beginPath();
 		ctx.lineWidth = "2";
 		ctx.strokeStyle = "green";
-		ctx.rect(params.area.x, params.area.y, params.area.w, params.area.h);
+		ctx.rect(_x, _y, _w, _h);
 		ctx.stroke();
 	}
 
 	drawFinal() {
-		let _w = params.area.w;
-		let _h = params.area.h;
-		let _imgData = ctx.getImageData(params.area.x, params.area.y, _w, _h);
+		let _x = params.area.x*512/params.size;
+		let _y = params.area.y*424/params.size;
+		let _w = params.area.w*512/params.size;
+		let _h = params.area.h*424/params.size;
+		let _imgData = ctx.getImageData(_x, _y, _w, _h);
 
 		canvasTemp.width = _w;
 		canvasTemp.height = _h;
@@ -128,7 +144,7 @@ export default class Scene {
 
 
 
-		let _size = 0.4;
+		let _size = params.finalSize;
 
 
 		canvasFinal.width = _w * _size;
@@ -149,8 +165,8 @@ export default class Scene {
 			let _d = _finalData.data[i];
 
 			_finalData.data[i] = 0;
-			_finalData.data[i+1] = 0;
-			_finalData.data[i+2] = 0;
+			_finalData.data[i + 1] = 0;
+			_finalData.data[i + 2] = 0;
 
 			if (_d > 10) {
 				let _x = _num % Math.floor(_w * _size);
@@ -161,7 +177,7 @@ export default class Scene {
 				_finalData.data[i + 1] = 255;
 
 				if (pointStr != "") pointStr += ",";
-				pointStr += Math.round(_x / (_w * _size) * 100) / 100 + "~" + Math.round(_y / (_h* _size)* 100) / 100;
+				pointStr += Math.round(_x / (_w * _size) * 100) / 100 + "~" + Math.round(_y / (_h * _size) * 100) / 100;
 			}
 
 

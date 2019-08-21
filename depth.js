@@ -22,6 +22,7 @@ if(kinect.open()) {
 
     var depthMin = 500;
 	var depthMax = 1000;
+	var size = 1;
 	io.sockets.on('connection', function (socket){
 
 	    socket.on('setDepthMin', function(data){
@@ -29,6 +30,10 @@ if(kinect.open()) {
 	    });
 	    socket.on('setDepthMax', function(data){
 	        depthMax = data;
+	    });
+
+	    socket.on('setSize', function(data){
+	    	size = data;
 	    });
 
 
@@ -47,7 +52,7 @@ if(kinect.open()) {
 		var j = 0;
 		var depthArr = new Uint16Array(depthBuffer.length*0.5);
 
-		for (var i = 0; i < depthBuffer.length; i += 2) {
+		for (var i = 0; i < depthBuffer.length; i += 2*size) {
 			var depth = (depthBuffer[i + 1] << 8) + depthBuffer[i]; //get  data from uint16 buffer
 			if (depth <= depthMin || depth >= depthMax) depth = 0;
 			else depth -=depthMin;
