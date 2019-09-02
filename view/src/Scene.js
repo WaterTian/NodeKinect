@@ -4,6 +4,9 @@ import io_c from 'socket.io-client';
 const base64js = require('base64-js');
 const pako = require('pako');
 
+import * as Unit from './Unit';
+window.Unit = Unit;
+
 
 
 var That;
@@ -26,7 +29,6 @@ window.params = {
 	depthMax: 1000,
 	size: 1,
 	finalSize: 0.5,
-
 	area: {
 		x: 0,
 		y: 0,
@@ -42,7 +44,16 @@ export default class Scene {
 	constructor() {
 		That = this;
 
-		this.initGUI();
+
+		Unit.loadJson("http://127.0.0.1:8888/kConfig.json").then(function(json) {
+			params = json.kinect;
+			console.log(params);
+
+			That.initGUI();
+		}, function(error) {
+			console.error('getconfig Erro', error);
+		});
+
 
 		this.socket = io_c('http://127.0.0.1:8888/');
 		this.socket.on('depthFrame', this.depthFrame);
@@ -66,7 +77,7 @@ export default class Scene {
 		});
 		gui.add(params, 'size', 1, 10).step(1).listen().onChange(function() {
 			That.setDepth();
-		});		
+		});
 
 		gui.add(params, 'finalSize', .1, 1);
 
@@ -75,6 +86,8 @@ export default class Scene {
 		area.add(params.area, 'y', 0, 1).step(0.01);
 		area.add(params.area, 'w', 0, 1).step(0.01);
 		area.add(params.area, 'h', 0, 1).step(0.01);
+
+		That.setDepth();
 
 	}
 
@@ -106,22 +119,21 @@ export default class Scene {
 			depthNum += 2;
 		}
 
-		canvas.width = 512/params.size;
-		canvas.height = 424/params.size;
+		canvas.width = 512 / params.size;
+		canvas.height = 424 / params.size;
 
 		ctx.putImageData(imageData, 0, 0);
 
 		That.drawFinal();
 		That.drawLine();
-
 	}
 
 
 	drawLine() {
-		let _x = params.area.x*512/params.size;
-		let _y = params.area.y*424/params.size;
-		let _w = params.area.w*512/params.size;
-		let _h = params.area.h*424/params.size;
+		let _x = params.area.x * 512 / params.size;
+		let _y = params.area.y * 424 / params.size;
+		let _w = params.area.w * 512 / params.size;
+		let _h = params.area.h * 424 / params.size;
 
 		ctx.beginPath();
 		ctx.lineWidth = "2";
@@ -131,10 +143,10 @@ export default class Scene {
 	}
 
 	drawFinal() {
-		let _x = params.area.x*512/params.size;
-		let _y = params.area.y*424/params.size;
-		let _w = params.area.w*512/params.size;
-		let _h = params.area.h*424/params.size;
+		let _x = params.area.x * 512 / params.size;
+		let _y = params.area.y * 424 / params.size;
+		let _w = params.area.w * 512 / params.size;
+		let _h = params.area.h * 424 / params.size;
 		let _imgData = ctx.getImageData(_x, _y, _w, _h);
 
 		canvasTemp.width = _w;

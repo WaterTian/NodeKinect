@@ -1,0 +1,16 @@
+{
+	"name": "光影",
+	"author": "WaterTian <changewater@qq.com>",
+	"kinect": {
+		"depthMin": 1500,
+		"depthMax": 2000,
+		"size": 1,
+		"finalSize": 0.5,
+		"area": {
+			"x": 0,
+			"y": 0,
+			"w": 1,
+			"h": 1
+		}
+	}
+}
